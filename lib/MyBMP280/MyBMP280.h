@@ -4,21 +4,18 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP280.h>
 
-class MyBMP280
+class MyBMP280 : public Adafruit_BMP280
 {
 private:
-    Adafruit_BMP280 *adafruit_BMP280;
-
-    sensor_t sensor;
-    sensors_event_t event;
-
-    float getPressureFromSensor();
+    float _pressureOffset;
 
 public:
-    MyBMP280();
-    bool begin(uint8_t addr = BMP280_ADDRESS, uint8_t chipid = BMP280_CHIPID);
-    float getPressure();
-    int getPressureRounded();
+    //bool begin(uint8_t addr = BMP280_ADDRESS, uint8_t chipid = BMP280_CHIPID, float pressureOffset = 0.0);
+    bool begin(uint8_t addr = BMP280_ADDRESS, float pressureOffset = 0.0);
+    float pressureOffset() { return _pressureOffset; }
+    void pressureOffset(float pressureOffset) { _pressureOffset = pressureOffset; }
+    float pressure();
+    int pressureRounded();
 };
 
 extern MyBMP280 myBMP280;

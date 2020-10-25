@@ -21,15 +21,29 @@ void setup()
 void loop()
 {
 
-  int currentPressure = myBMP280.getPressureRounded();
-  if (isnan(currentPressure))
+  int currentPressure2 = myBMP280.pressureRounded();
+  if (isnan(currentPressure2))
   {
     Serial.println(F("Error reading Pressure!"));
   }
   else
   {
     Serial.print("Pressure = ");
-    Serial.print(currentPressure);
+    Serial.print(currentPressure2);
+    Serial.println(" hPa");
+  }
+
+
+
+  float currentPressure4 = myBMP280.pressure();
+  if (isnan(currentPressure4))
+  {
+    Serial.println(F("Error reading Pressure!"));
+  }
+  else
+  {
+    Serial.print("Pressure = ");
+    Serial.print(currentPressure4);
     Serial.println(" hPa");
   }
 

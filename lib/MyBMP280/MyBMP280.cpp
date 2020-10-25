@@ -1,27 +1,25 @@
 #include "MyBMP280.h"
 
-MyBMP280::MyBMP280()
+//bool MyBMP280::begin(uint8_t addr, uint8_t chipid, float pressureOffset)
+//{
+//  _pressureOffset = pressureOffset;
+//  return Adafruit_BMP280::begin(addr, chipid);
+//}
+
+bool MyBMP280::begin(uint8_t addr, float pressureOffset)
 {
-  adafruit_BMP280 = new Adafruit_BMP280();
+  _pressureOffset = pressureOffset;
+  return Adafruit_BMP280::begin(addr);
 }
 
-bool MyBMP280::begin(uint8_t addr, uint8_t chipid)
+float MyBMP280::pressure()
 {
-  return adafruit_BMP280->begin(addr, chipid);
+  sensors_event_t event;
+  Adafruit_BMP280::getPressureSensor()->getEvent(&event);
+  return event.pressure + _pressureOffset;
 }
 
-float MyBMP280::getPressureFromSensor()
+int MyBMP280::pressureRounded()
 {
-  adafruit_BMP280->getPressureSensor()->getEvent(&event);
-  return event.pressure;
-}
-
-float MyBMP280::getPressure()
-{
-  return getPressureFromSensor();
-}
-
-int MyBMP280::getPressureRounded()
-{
-  return (int)round(getPressure());
+  return (int)round(pressure());
 }
