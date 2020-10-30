@@ -1,18 +1,16 @@
 #include <Arduino.h>
 #include <MyBMP280.h>
 
-#include "stationMeteoDef.h"
-
-MyBMP280 myBMP280;
+#include "bmp280Var.h"
+#include "commandManager.h"
 
 void setup()
 {
   Serial.begin(115200);
-  Serial.println(F("BMP280 test"));
 
-  if (!myBMP280.begin(BMP280_ADDR))
+  if (!bmp.begin(BMP280_ADDR))
   {
-    Serial.println("Could not find a valid BMP280 sensor, check wiring!");
+    cerr << "Le capteur BMP280 est introuvable. Vérifier votre câblage" << endl;
     while (1)
       ;
   }
@@ -20,32 +18,15 @@ void setup()
 
 void loop()
 {
-
-  int currentPressure2 = myBMP280.pressureRounded();
-  if (isnan(currentPressure2))
+  try
   {
-    Serial.println(F("Error reading Pressure!"));
+    commands();
+    cout << "currentPressure : " << bmp.pressure() << "hPa" << endl;
+    cout << "currentPressureRounded : " << bmp.pressureRounded() << "hPa" << endl;
   }
-  else
+  catch (const char *msg)
   {
-    Serial.print("Pressure = ");
-    Serial.print(currentPressure2);
-    Serial.println(" hPa");
+    cerr << "Une erreur est survenue : " << msg << endl;
   }
-
-
-
-  float currentPressure4 = myBMP280.pressure();
-  if (isnan(currentPressure4))
-  {
-    Serial.println(F("Error reading Pressure!"));
-  }
-  else
-  {
-    Serial.print("Pressure = ");
-    Serial.print(currentPressure4);
-    Serial.println(" hPa");
-  }
-
   delay(2000);
 }
