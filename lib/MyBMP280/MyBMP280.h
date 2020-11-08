@@ -21,10 +21,9 @@ public:
     float pressureOffset() { return _pressureOffset; }
     void pressureOffset(float pressureOffset) { _pressureOffset = pressureOffset; }
     float pressure();
-    int pressureRounded();
 
-    void readCommand(int sensorId, char *readData);
-    void writeCommand(int sensorId, char *readData);
+    String readCommand(char *readData, int8_t sensorId);
+    String writeCommand(char *readData);
 };
 
 extern MyBMP280 bmp;

@@ -4,12 +4,7 @@ float MyBMP280::_pressureFromEvent()
 {
   sensors_event_t event;
   Adafruit_BMP280::getPressureSensor()->getEvent(&event);
-  float h = event.pressure;
-  if (isnan(h))
-  {
-    throw "Erreur lecture pression";
-  }
-  return h;
+  return event.pressure;
 }
 
 float MyBMP280::pressure()
@@ -17,67 +12,63 @@ float MyBMP280::pressure()
   return _pressureFromEvent() + _pressureOffset;
 }
 
-int MyBMP280::pressureRounded()
+String MyBMP280::writeCommand(char *readData)
 {
-  return (int)round(pressure());
-}
-
-void MyBMP280::writeCommand(int sensorId, char *readData)
-{
+  String retour = "Commande inexistante";
   switch (readData[0])
   {
   case 'O':
     char subbuff[6];
     memcpy(subbuff, &readData[1], 6);
     pressureOffset(atof(subbuff));
-    cout << ">" << sensorId << "O:" << pressureOffset() << "hPa" << endl;
-    break;
-  default:
-    throw "Commande inexistante";
+    return retour = "O:" + String(pressureOffset()) + "hPa";
     break;
   }
+  return retour;
 }
 
-void MyBMP280::readCommand(int sensorId, char *readData)
+String MyBMP280::readCommand(char *readData, int8_t sensorId)
 {
+  String retour = "Commande inexistante";
   switch (readData[0])
   {
   case 'C':
-    cout << "------------------------------------" << endl
-         << "Liste des commandes" << endl
-         << "'>" << sensorId << "C' : Liste des commandes" << endl
-         << "'>" << sensorId << "P' : Lit la pression" << endl
-         << "'>" << sensorId << "R' : Lit la pression arrondie" << endl
-         << "'>" << sensorId << "O' : Lit l'offset de pression" << endl
-         << "'>" << sensorId << "I' : Lit les infos du capteur de pression" << endl
-         << "'<" << sensorId << "OXX.XX' : modifie l'offset de pression" << endl
-         << "------------------------------------" << endl;
+    retour = "------------------------------------\n";
+    retour += "Liste des commandes\n";
+    retour += "'>" + String(sensorId) + "C' : Liste des commandes\n";
+    retour += "'>" + String(sensorId) + "P' : Lit la pression\n";
+    retour += "'>" + String(sensorId) + "O' : Lit l'offset de pression\n";
+    retour += "'>" + String(sensorId) + "I' : Lit les infos du capteur de pression\n";
+    retour += "'<" + String(sensorId) + "OXX.XX' : modifie l'offset de pression\n";
+    retour += "------------------------------------";
     break;
   case 'P':
-    cout << ">" << sensorId << "P:" << pressure() << "hPa" << endl;
-    break;
-  case 'R':
-    cout << ">" << sensorId << "H:" << pressureRounded() << "hPa" << endl;
+    if (isnan(pressure()))
+    {
+      retour = "P:lecture de la pression impossible";
+    }
+    else
+    {
+      retour = "P:" + String((int)round(pressure())) + "hPa";
+    }
     break;
   case 'O':
-    cout << ">" << sensorId << "OT:" << pressureOffset() << "hPa" << endl;
+    retour = "O:" + String(pressureOffset()) + "hPa";
     break;
   case 'I':
     sensor_t sensor;
     Adafruit_BMP280::getPressureSensor()->getSensor(&sensor);
-    cout << "------------------------------------" << endl
-         << "Humidity Sensor" << endl
-         << "Nom: " << sensor.name << endl
-         << "Version:  " << sensor.version << endl
-         << "Identifiant:   " << sensor.sensor_id << endl
-         << "Delay minimun:   " << sensor.min_delay / 1000 << "Ms" << endl
-         << "Valeur Max:   " << sensor.max_value << "hPa" << endl
-         << "Valeur Min:   " << sensor.min_value << "hPa" << endl
-         << "Resolution:  " << sensor.resolution << "hPa" << endl
-         << "------------------------------------" << endl;
-    break;
-  default:
-    throw "Commande inexistante";
+    retour += "------------------------------------\n";
+    retour + "capteur de pression Sensor\n";
+    retour += "Nom: " + String(sensor.name) + "\n";
+    retour += "Version:  " + String(sensor.version) + "\n";
+    retour += "Identifiant:   " + String(sensor.sensor_id) + "\n";
+    retour += "Delay minimun:   " + String(sensor.min_delay / 1000) + "Ms\n";
+    retour += "Valeur Max:   " + String(sensor.max_value) + "hPa\n";
+    retour += "Valeur Min:   " + String(sensor.min_value) + "hPa\n";
+    retour += "Resolution:  " + String(sensor.resolution) + "hPa\n";
+    retour += "------------------------------------";
     break;
   }
+  return retour;
 }
