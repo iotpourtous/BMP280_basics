@@ -1,5 +1,15 @@
 #include "MyBMP280.h"
 
+MyBMP280::MyBMP280(
+    uint8_t addr, float pressureOffset) : Adafruit_BMP280(&Wire),
+                                          _addr(addr),
+                                          _pressureOffset(pressureOffset) {}
+
+bool MyBMP280::begin()
+{
+  return Adafruit_BMP280::begin(_addr);
+}
+
 float MyBMP280::_pressureFromEvent()
 {
   sensors_event_t event;
@@ -7,33 +17,37 @@ float MyBMP280::_pressureFromEvent()
   return event.pressure;
 }
 
-float MyBMP280::pressure()
+int MyBMP280::pressure()
 {
-  return _pressureFromEvent() + _pressureOffset;
+  return (int)round(_pressureFromEvent() + _pressureOffset);
 }
 
-String MyBMP280::writeCommand(char *readData)
+boolean MyBMP280::isNotIntValue(String data)
 {
-  String retour = "Commande inexistante";
-  switch (readData[0])
+  return data.toInt() == 0 && data.charAt(0) != '0';
+}
+
+String MyBMP280::writeCommand(String command)
+{
+  if (command.startsWith("O"))
   {
-  case 'O':
-    char subbuff[6];
-    memcpy(subbuff, &readData[1], 6);
-    pressureOffset(atof(subbuff));
-    return retour = "O:" + String(pressureOffset()) + "hPa";
-    break;
+
+    String data = command.substring(1);
+    if (isNotIntValue(data))
+    {
+      return "Commande incorrecte";
+    }
+    pressureOffset(data.toInt());
+    return "OK";
   }
-  return retour;
+  return "Commande inexistante";
 }
 
-String MyBMP280::readCommand(char *readData, int8_t sensorId)
+String MyBMP280::readCommand(String command, int8_t sensorId)
 {
-  String retour = "Commande inexistante";
-  switch (readData[0])
+  if (command.equals(LIST_COMMAND))
   {
-  case 'C':
-    retour = "------------------------------------\n";
+    String retour = "------------------------------------\n";
     retour += "Liste des commandes\n";
     retour += "'>" + String(sensorId) + "C' : Liste des commandes\n";
     retour += "'>" + String(sensorId) + "P' : Lit la pression\n";
@@ -41,24 +55,23 @@ String MyBMP280::readCommand(char *readData, int8_t sensorId)
     retour += "'>" + String(sensorId) + "I' : Lit les infos du capteur de pression\n";
     retour += "'<" + String(sensorId) + "OXX.XX' : modifie l'offset de pression\n";
     retour += "------------------------------------";
-    break;
-  case 'P':
-    if (isnan(pressure()))
-    {
-      retour = "P:lecture de la pression impossible";
-    }
-    else
-    {
-      retour = "P:" + String((int)round(pressure())) + "hPa";
-    }
-    break;
-  case 'O':
-    retour = "O:" + String(pressureOffset()) + "hPa";
-    break;
-  case 'I':
+    return retour;
+  }
+  else if (command.equals("P"))
+  {
+    return (isnan(pressure()))
+               ? "P:lecture de la préssion impossible"
+               : "P:" + String((int)round(pressure())) + "hPa";
+  }
+  else if (command.equals("O"))
+  {
+    return "O:" + String(pressureOffset()) + "hPa";
+  }
+  else if (command.equals("I"))
+  {
     sensor_t sensor;
     Adafruit_BMP280::getPressureSensor()->getSensor(&sensor);
-    retour += "------------------------------------\n";
+    String retour = "------------------------------------\n";
     retour + "capteur de pression Sensor\n";
     retour += "Nom: " + String(sensor.name) + "\n";
     retour += "Version:  " + String(sensor.version) + "\n";
@@ -68,7 +81,10 @@ String MyBMP280::readCommand(char *readData, int8_t sensorId)
     retour += "Valeur Min:   " + String(sensor.min_value) + "hPa\n";
     retour += "Resolution:  " + String(sensor.resolution) + "hPa\n";
     retour += "------------------------------------";
-    break;
+    return retour;
   }
-  return retour;
+  else
+  {
+    return "Commande inexistante";
+  }
 }

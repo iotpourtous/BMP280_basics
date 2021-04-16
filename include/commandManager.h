@@ -3,54 +3,30 @@
 
 #include "bmp280Def.h"
 
-String commands(char *readData)
+
+String commands(String command)
 {
-  String retour = "Commande inexistante";
-  switch (readData[0])
-  {
-  case '<':
-    if ((readData[1] - '0') == BMP280_SENSOR_ID)
-    {
-      char subbuff[8];
-      memcpy(subbuff, &readData[2], 8);
-      retour = "<" + String(BMP280_SENSOR_ID) + bmp.writeCommand(subbuff);
-    }
-    break;
-  case '>':
-    if ((readData[1] - '0') == BMP280_SENSOR_ID)
-    {
-      char subbuff[8];
-      memcpy(subbuff, &readData[2], 8);
-      retour = ">" + String(BMP280_SENSOR_ID) + bmp.readCommand(subbuff, BMP280_SENSOR_ID);
-    }
-    break;
+  if(command.substring(0,2).equals("<" + String(BMP280_SENSOR_ID))){
+    return bmp->writeCommand(command.substring(2));
+  } else if(command.substring(0,2).equals(">" + String(BMP280_SENSOR_ID))){
+    return bmp->readCommand(command.substring(2), BMP280_SENSOR_ID);
   }
-  return retour;
+  return "Commande inexistante";
 }
+
 void commandsFromSerial()
 {
-  if (Serial.available() > 0)
-  {
-    char readData[MAX_COMMAND_SIZE];
-
-    size_t bytesReceived = Serial.readBytesUntil('\n', readData, MAX_COMMAND_SIZE);
-    if (bytesReceived > 0)
-    {
-      Serial.println(commands(readData));
+    if(Serial.available()){
+      String command = Serial.readStringUntil('\n');
+      Serial.println(commands(command));
     }
-  }
 }
 void commandsFromBT()
 {
   if (SerialBT.available() > 0)
   {
-    char readData[MAX_COMMAND_SIZE];
-
-    size_t bytesReceived = SerialBT.readBytesUntil('\n', readData, MAX_COMMAND_SIZE);
-    if (bytesReceived > 0)
-    {
-      SerialBT.println(commands(readData));
-    }
+      String command = SerialBT.readStringUntil('\n');
+      SerialBT.println(commands(command));
   }
 }
 
