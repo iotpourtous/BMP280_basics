@@ -3,13 +3,11 @@
 
 #include "bmp280Def.h"
 
-
 String commands(String command)
 {
-  if(command.substring(0,2).equals("<" + String(BMP280_SENSOR_ID))){
-    return bmp->writeCommand(command.substring(2));
-  } else if(command.substring(0,2).equals(">" + String(BMP280_SENSOR_ID))){
-    return bmp->readCommand(command.substring(2), BMP280_SENSOR_ID);
+  if (command.startsWith((String)BMP280_SENSOR_ID))
+  {
+    return bmp.executeCommand(command.substring(1));
   }
   return "Commande inexistante";
 }

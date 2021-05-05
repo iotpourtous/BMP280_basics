@@ -5,9 +5,7 @@
 #include "bmp280Def.h"
 #include "BluetoothSerial.h"
 
-int pressureOffset = 0;
-
-MyBMP280 *bmp = new MyBMP280(BMP280_ADDR);
+MyBMP280 bmp(BMP280_ADDR, BMP280_SENSOR_ID);
 
 BluetoothSerial SerialBT;
 
